@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import serpapi
 from pprint import pprint
+import json
+import re
 
 load_dotenv()
 
@@ -48,8 +50,30 @@ def serpapi_google_search(search_q: str, results_per_page: int = 100):
     except Exception as e:
         print('Exception at serp_api google search call', e)
 
+@tool(return_direct=True)
+def return_as_json(data: str) -> dict:
+    """
+    Takes a description or structured list and converts it into valid JSON.
+    """
+    import json
+    try:
+        return json.loads(data)
+    except Exception:
+        return {"error": "Invalid JSON, here is the raw data", "raw": data}
 
-tools = [serpapi_google_search]
+def extract_json_from_text(text: str):
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}|\[.*\]", text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except:
+                pass
+    return None
+
+tools = [serpapi_google_search, return_as_json]
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 prompt = ChatPromptTemplate.from_messages([
     SystemMessage(
@@ -86,6 +110,9 @@ prompt = ChatPromptTemplate.from_messages([
             * company_type (startup or consulting),
             * industry (Just is company is startup),
             * Stage (meaning that if the company is series seed, A, etc)
+        4. The result must be an array of json
+
+        When you're done, output only the final result as valid JSON using the return_as_json tool. Do not include any explanation or formatting.
         """
     ),
     MessagesPlaceholder("agent_scratchpad"),
@@ -99,11 +126,14 @@ agent = create_openai_functions_agent(
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
 def main():
-    user_input = "Hi, I'm a backend engineer from Argentina looking for jobs"
+    user_input = "Hi, I'm a backend engineer from Colombia looking for jobs"
     result = agent_executor.invoke({
         "input": [HumanMessage(content=user_input)],
     })
-    print(result["output"])
+    pprint(result["output"])
+    # raw_output = result["output"]
+    # parsed = extract_json_from_text(raw_output)
+    # print(parsed)
 
 if __name__ == '__main__':
     main()
