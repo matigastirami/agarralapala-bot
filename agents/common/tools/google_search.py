@@ -26,13 +26,6 @@ def serpapi_google_search(search_q: str, results_per_page: int = 100):
             "num": results_per_page
         }
         results = serp_api_client.search(params)
-        # parsed_results = {}
-        # if "organic_results" not in results:
-        #     raise Exception("Could not find any result on serpapi")
-
-        # # TODO: fetch at most 5 - 6 pages (env var to configures)
-        # for item in results["organic_results"]:
-        # return parsed_results
         organic = results.get("organic_results", [])[:5]
         return [{"title": r.get("title"), "link": r.get("link"), "snippet": r.get("snippet")} for r in organic]
     except Exception as e:

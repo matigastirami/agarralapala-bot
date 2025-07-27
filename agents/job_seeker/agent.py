@@ -24,6 +24,10 @@ agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 def exec_jobs_agent(user_input):
     result = agent_executor.invoke({
         "input": [HumanMessage(content=user_input)],
+    }, config={
+        "configurable": {
+            "max_steps": 25
+        },
     })
     output = result["output"]
     print(output, isinstance(output, list))
