@@ -1,7 +1,20 @@
 # Description
 A langchain-based agent that uses scrapping tools for looking for jobs.
 
->Note: This repository is a module part of a bigger system you can see here: [Link to main repo](http://REPLACE_ME.com)
+# Setting up development environment
+```bash
+# Copy the .env example file and replace with actual values
+cp .env.example .env
+
+# Create a venv
+python3 -m venv venv
+
+# Activate the venv (works in MacOS at least)
+source venv/bin/activate
+
+# Test the job_seeker agent with a prompt
+make test prompt="I'm a backend engineer from Argentina looking for NestJS jobs"
+```
 
 # Technologies
 * Python
@@ -73,3 +86,8 @@ GET /jobs/:chat_id
   ...
 ]
 ```
+
+# Features
+- [ ] Google search to ATS directly from SerpAPI
+- [ ] Fetch for jobs in YC startups and check in LinkedIn if the company hires in the Geographical zone of the candidate though it's not specified in the job posting.
+- [ ] Candidate match score: A new agent will be in charge of matching the existing job postings with candidates (added via telegram bot) and will send recurrent job alerts every some configurable time
