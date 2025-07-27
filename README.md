@@ -25,6 +25,7 @@ make test prompt="I'm a backend engineer from Argentina looking for NestJS jobs"
 
 # Architecture
 The system has a LangChain agent backed by OpenAI API, and uses SerpAPI and hrequests to perform scrapping over results.
+![Architecture Diagram](docs/architecture.png)
 
 # Features
 For a given input of tech stacks and locations, it'll approach search from different sources:
