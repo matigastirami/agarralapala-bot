@@ -1,1 +1,9 @@
-langchain[openai]
+serpapi==0.1.5
+langchain==0.3.27
+langchain-core==0.3.72
+langchain-openai==0.3.28
+pydantic==2.11.7
+alembic==1.16.4
+sqlalchemy==2.0.41
+psycopg2-binary==2.9.10
+dotenv==0.9.9
