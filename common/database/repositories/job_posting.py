@@ -19,3 +19,6 @@ class JobPostingsRepository():
             self.session.rollback()
         finally:
             self.session.close()
+
+    def get_job_postings(self):
+        return self.session.query(JobPosting).all()

@@ -92,3 +92,18 @@ GET /jobs/:chat_id
 - [ ] Google search to ATS directly from SerpAPI
 - [ ] Fetch for jobs in YC startups and check in LinkedIn if the company hires in the Geographical zone of the candidate though it's not specified in the job posting.
 - [ ] Candidate match score: A new agent will be in charge of matching the existing job postings with candidates (added via telegram bot) and will send recurrent job alerts every some configurable time
+
+# Migrations
+
+## Creating migrations
+1. Create new models, modify existing ones, or anything under folder `common/database/models`
+2. Exec `make migrate name=YOUR_MIGRATION_NAME`
+3. A new file will be created under folder `common/database/migrations/versions`
+
+## Applying migrations
+Run `make upgrade [target=(HEAD|MIGRATION_ID)]`
+>NOTE: Target is optional, by default it'll be head
+
+## Rolling back
+Run `make downgrade [steps=TOTAL_STEPS]`
+>NOTE: Total steps by default is -1 if not informed

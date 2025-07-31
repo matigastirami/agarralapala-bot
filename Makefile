@@ -1,4 +1,4 @@
-DATABASE_URL ?= $(shell echo $$DATABASE_URL)
+DATABASE_URL ?= $(shell grep '^DATABASE_URL=' .env | cut -d '=' -f2-)
 ALEMBIC_DIR = common/database/migrations
 ALEMBIC_CMD = source venv/bin/activate && DATABASE_URL=$(DATABASE_URL) alembic -c alembic.ini
 
