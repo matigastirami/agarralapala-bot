@@ -30,9 +30,7 @@ prompt = ChatPromptTemplate.from_messages([
         
         A JSON array parsed must be created using the return_as_json tool as it'll be posted directly to the DB.
         
-        Finally, the matches must be saved invoking the tool save_job_matches passing the JSON array previously generated.
-        
-        Your answer is just how many matches you found.
+        Finally, invoke save_job_matches tool with the JSON array generated to persist the matches.
         """
     ),
     MessagesPlaceholder("agent_scratchpad"),
