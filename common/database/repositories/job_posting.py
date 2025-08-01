@@ -3,7 +3,7 @@ from common.database.database import db_session
 
 from sqlalchemy.exc import IntegrityError
 
-class JobPostingsRepository():
+class JobPostingsRepository:
     def __init__(self) -> None:
         self.session = db_session()
 

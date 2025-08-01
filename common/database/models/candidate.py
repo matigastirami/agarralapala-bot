@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Nullable
+from sqlalchemy import Column, Integer, String, DateTime, Nullable, func
 
 from common.database.models import Base
 
@@ -11,6 +11,6 @@ class Candidate(Base):
     location = Column(String(length=64), nullable=True)
     role = Column(String(length=64), nullable=True)
 
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now()) # Add default value here
     updated_at = Column(DateTime, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
