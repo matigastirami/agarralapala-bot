@@ -7,3 +7,4 @@ alembic==1.16.4
 sqlalchemy==2.0.41
 psycopg2-binary==2.9.10
 dotenv==0.9.9
+apscheduler==3.11.0

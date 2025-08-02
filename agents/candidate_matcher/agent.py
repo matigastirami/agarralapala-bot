@@ -8,10 +8,9 @@ from pydantic import SecretStr
 from agents.candidate_matcher.prompts import prompt
 from agents.common.tools.get_candidates import get_candidates
 from agents.common.tools.get_job_postings import get_job_postings
-from agents.common.tools.json_tools import return_as_json, convert_to_json
+from agents.common.tools.json_tools import convert_to_json
 from agents.common.tools.save_matches import save_job_matches
 from common.config.config import OPENAI_API_KEY
-from common.database.repositories.matches import MatchesRepository
 
 # TODO: missing add candidates table and a tool to retrieve all
 tools = [

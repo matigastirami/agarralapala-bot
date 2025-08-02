@@ -12,6 +12,8 @@ prompt = ChatPromptTemplate.from_messages([
         
         Each candidate will have this info available for the moment: Location, Role, Tech Stack.
         
+        Avoid matching different locations, if a given position is in a LATAM country and the job is for example in the USA, so it's not a match.
+        
         For each candidate, you must evaluate the match score based on the info you have available and return a json convert_to_json tool with this fields:
         
         ```

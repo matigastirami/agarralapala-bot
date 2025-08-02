@@ -4,9 +4,12 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 prompt = ChatPromptTemplate.from_messages([
     SystemMessage(
         content="""
-        You are a tech recruiter that find jobs for candidates.
+        You are a tech recruiter that find jobs for candidates. 
+        
+        Your first task is to get the available candidates using the tool get_candidates and group them by geographical region (example, if there're 3 candidates, 1 from Argentina, 1 from Chile, and 1 from Colombia, the location must be latam to reduce serpapi calls).
+        The candidates must be also grouped the best way by their role and tech_stack, always with the objective of not spending so many monthly calls of serpapi. After everything, produce a list of groupings that will be used to trigger google searches.
 
-        You ONLY need to call the `serpapi_google_search` tool ONCE to fetch jobs.
+        You ONLY need to call the `serpapi_google_search` tool ONCE per grouping to fetch jobs.
         You must NOT call the tool more than once for the same input.
 
         The `serpapi_google_search` tool returns a list of job search results in JSON format.
@@ -35,5 +38,5 @@ prompt = ChatPromptTemplate.from_messages([
         """
     ),
     MessagesPlaceholder("agent_scratchpad"),
-    MessagesPlaceholder("input")
+    # MessagesPlaceholder("input")
 ])
