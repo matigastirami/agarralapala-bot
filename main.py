@@ -1,10 +1,12 @@
+import logging
 import time
 
 from agents.job_seeker.agent import exec_jobs_agent
 from common.database.repositories.job_posting import JobPostingsRepository
 import sys
 
-from crons.job_seeker_cron import register_scheduler
+from crons.cron_manager import CronManager
+from crons.job_seeker_cron import JobSeekerCron
 
 # if __name__ == '__main__':
 #     if len(sys.argv) <= 1:
@@ -16,10 +18,14 @@ from crons.job_seeker_cron import register_scheduler
 
 
 if __name__ == '__main__':
-    scheduler = register_scheduler(exec_jobs_agent, trigger='interval', hours=1)
+    logging.basicConfig(level=logging.INFO)
+
+    cron_manager = CronManager()
+    cron_manager.register(JobSeekerCron())
+    cron_manager.start()
 
     try:
         while True:
             time.sleep(60)
     except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
+        cron_manager.shutdown()

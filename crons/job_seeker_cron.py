@@ -1,7 +1,15 @@
-from apscheduler.schedulers.background import BackgroundScheduler
+from agents.job_seeker.agent import exec_jobs_agent
+from crons.cron_manager import CronJob
 
-def register_scheduler(job, trigger: str, **kwargs):
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(job, trigger, **kwargs)
-    return scheduler
 
+class JobSeekerCron(CronJob):
+    @property
+    def name(self) -> str:
+        return "job_seeker_agent_cron"
+
+    @property
+    def interval_hours(self) -> int:
+        return 24
+
+    def run(self):
+        exec_jobs_agent()
