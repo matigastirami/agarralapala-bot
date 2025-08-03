@@ -1,7 +1,9 @@
 # AgarralapalaBot
 A langchain-based agent that uses scrapping tools for looking for jobs and exposes a telegram chatbot with periodical updates.
 
-![logo.png](docs/bot_telegram_logo.png)
+<div align="center">
+    <img src="docs/bot_telegram_logo.png" alt="AgarralapalaBot" width="500"/>
+</div>
 
 # Setting up development environment
 ```bash
@@ -20,7 +22,14 @@ make serve
 
 Then, go to Telegram app and chat @AgarralapalaBot or scan the QR below:
 
-![telegrambot.png](docs/telegram_bot_link.png)
+<div align="center">
+    <img src="docs/telegram_bot_link.png" alt="QR" width="250"/>
+</div>
+
+## Example message
+<div align="center">
+    <img src="docs/example_message.png" alt="AgarralapalaBot"/>
+</div>
 
 # Guides
 * Database Migrations: [Read](docs/migrations.md)

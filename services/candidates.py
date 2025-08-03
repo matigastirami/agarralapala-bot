@@ -9,7 +9,7 @@ class CandidatesService:
     def get_candidates(self):
         return self.candidates_repo.get_candidates()
 
-    def upsert(self, id: str, data: UpsertCandidateInput):
+    def upsert(self, id: int, data: UpsertCandidateInput):
         candidate = self.candidates_repo.get_by_id(id)
         if candidate:
             self.candidates_repo.update(id, data)
@@ -17,5 +17,5 @@ class CandidatesService:
             data.telegram_chat_id = id
             self.candidates_repo.create(data)
 
-    def get_by_id(self, id: str):
+    def get_by_id(self, id: int):
         return self.candidates_repo.get_by_id(id)
