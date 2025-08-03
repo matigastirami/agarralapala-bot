@@ -1,50 +1,55 @@
+import logging
+
 from langchain_openai.chat_models.base import ChatOpenAI
 from langchain.agents.openai_functions_agent.base import create_openai_functions_agent
 from langchain.agents.agent import AgentExecutor
-from langchain_core.messages.human import HumanMessage
 
 from pydantic import SecretStr
 
 from agents.candidate_matcher.prompts import prompt
+from agents.common.abstract_agent import Agent
 from agents.common.tools.get_candidates import get_candidates
 from agents.common.tools.get_job_postings import get_job_postings
 from agents.common.tools.json_tools import convert_to_json
 from agents.common.tools.save_matches import save_job_matches
 from common.config.config import OPENAI_API_KEY
 
-# TODO: missing add candidates table and a tool to retrieve all
-tools = [
-    get_job_postings,
-    convert_to_json,
-    get_candidates,
-    save_job_matches
-]
-llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=SecretStr(OPENAI_API_KEY))
+class CandidateMatcherAgent(Agent):
+    def __init__(self):
+        tools = [
+            get_job_postings,
+            convert_to_json,
+            get_candidates,
+            save_job_matches
+        ]
+        llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=SecretStr(OPENAI_API_KEY))
+        agent = create_openai_functions_agent(
+            tools=tools,
+            llm=llm,
+            prompt=prompt,
+        )
+        self.executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-agent = create_openai_functions_agent(
-    tools=tools,
-    llm=llm,
-    prompt=prompt,
-)
+    @property
+    def name(self) -> str:
+        return 'candidate_matcher_agent'
 
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-
-def exec_matching_agent():
-    result = agent_executor.invoke({
-        # "input": [HumanMessage(content=user_input)],
-    }, config={
-        "configurable": {
-            "max_steps": 25
-        },
-    })
-    output = result["output"]
-    return output
+    def exec(self, **kwargs):
+        logging.info('[CandidateMatcherAgent] trying to execute LLM call')
+        result = self.executor.invoke(
+            kwargs.get('input', {}),
+            config={
+                "configurable": {
+                    "max_steps": 25
+                },
+            }
+        )
+        output = result["output"]
+        return output
 
 if __name__ == '__main__':
-    output = exec_matching_agent()
-    print(output)
-    print(isinstance(output, list))
-    # repo = MatchesRepository()
-    # repo.save_matches(output)
+    agent = CandidateMatcherAgent()
+    agent.exec()
+
 
 
