@@ -1,10 +1,7 @@
 import logging
 import time
 
-from agents.job_seeker.agent import exec_jobs_agent
-from common.database.repositories.job_posting import JobPostingsRepository
-import sys
-
+from bot.telegram_bot import TelegramBot
 from crons.cron_manager import CronManager
 from crons.job_seeker_cron import JobSeekerCron
 
@@ -23,6 +20,9 @@ if __name__ == '__main__':
     cron_manager = CronManager()
     cron_manager.register(JobSeekerCron())
     cron_manager.start()
+
+    telegram_bot = TelegramBot()
+    telegram_bot.run()
 
     try:
         while True:

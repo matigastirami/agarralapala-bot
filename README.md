@@ -90,7 +90,8 @@ GET /jobs/:chat_id
 
 # Features
 - [ ] Google search to ATS directly from SerpAPI
-- [ ] Fetch for jobs in YC startups and check in LinkedIn if the company hires in the Geographical zone of the candidate though it's not specified in the job posting.
+- [ ] Fetch for jobs in YC startups directory and check in LinkedIn if the company hires in the Geographical zone of the candidate though it's not specified in the job posting.
+- [ ] Fetch jobs in "Who's hiring" in HackerNews portal
 - [ ] Candidate match score: A new agent will be in charge of matching the existing job postings with candidates (added via telegram bot) and will send recurrent job alerts every some configurable time
 
 # Migrations
