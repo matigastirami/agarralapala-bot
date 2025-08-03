@@ -25,5 +25,5 @@ upgrade: venv-check
 downgrade: venv-check
 	@$(ALEMBIC_CMD) downgrade $(if $(steps),$(steps),-1)
 
-test: venv-check
-	python main.py "$(prompt)"
+serve: venv-check
+	python main.py

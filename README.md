@@ -1,5 +1,7 @@
-# Description
-A langchain-based agent that uses scrapping tools for looking for jobs.
+# AgarralapalaBot
+A langchain-based agent that uses scrapping tools for looking for jobs and exposes a telegram chatbot with periodical updates.
+
+![logo.png](docs/bot_telegram_logo.png)
 
 # Setting up development environment
 ```bash
@@ -12,9 +14,16 @@ python3 -m venv venv
 # Activate the venv (works in MacOS at least)
 source venv/bin/activate
 
-# Test the job_seeker agent with a prompt
-make test prompt="I'm a backend engineer from Argentina looking for NestJS jobs"
+# Start the telegram bot and agents schedulers
+make serve
 ```
+
+Then, go to Telegram app and chat @AgarralapalaBot or scan the QR below:
+
+![telegrambot.png](docs/telegram_bot_link.png)
+
+# Guides
+* Database Migrations: [Read](docs/migrations.md)
 
 # Technologies
 * Python
@@ -22,6 +31,9 @@ make test prompt="I'm a backend engineer from Argentina looking for NestJS jobs"
 * SerpAPI
 * Scraping (hrequests)
 * Supabase (Postgres provisioning)
+* SQLAlchemy
+* Alembic (Migrations system)
+* OpenAI
 
 # Architecture
 The system has a LangChain agent backed by OpenAI API, and uses SerpAPI and hrequests to perform scrapping over results.
@@ -93,18 +105,4 @@ GET /jobs/:chat_id
 - [ ] Fetch for jobs in YC startups directory and check in LinkedIn if the company hires in the Geographical zone of the candidate though it's not specified in the job posting.
 - [ ] Fetch jobs in "Who's hiring" in HackerNews portal
 - [ ] Candidate match score: A new agent will be in charge of matching the existing job postings with candidates (added via telegram bot) and will send recurrent job alerts every some configurable time
-
-# Migrations
-
-## Creating migrations
-1. Create new models, modify existing ones, or anything under folder `common/database/models`
-2. Exec `make migrate name=YOUR_MIGRATION_NAME`
-3. A new file will be created under folder `common/database/migrations/versions`
-
-## Applying migrations
-Run `make upgrade [target=(HEAD|MIGRATION_ID)]`
->NOTE: Target is optional, by default it'll be head
-
-## Rolling back
-Run `make downgrade [steps=TOTAL_STEPS]`
->NOTE: Total steps by default is -1 if not informed
+- [ ] Send daily job updates via telegram
