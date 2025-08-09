@@ -18,11 +18,11 @@ prompt = ChatPromptTemplate.from_messages([
         
         ```
         {
-            "candidate_id": ...,
-            "job_posting_id": ...,
-            "match_score": ...,
-            "strengths": ...,
-            "weaknesses": ...,
+            "candidate_id": int,
+            "job_posting_id": int,
+            "match_score": float,
+            "strengths": string,
+            "weaknesses": string,
         }
         ```
         
