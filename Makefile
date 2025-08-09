@@ -11,7 +11,16 @@ venv-check:
 		pip install -r requirements.txt \
 	)
 
-.PHONY: migrate upgrade downgrade venv-check
+# Setup Playwright browsers
+setup-playwright: venv-check
+	@echo "🎭 Installing Playwright browsers..."
+	@source venv/bin/activate && python install_playwright.py
+
+# Complete setup including migrations and Playwright
+setup: venv-check setup-playwright
+	@echo "🚀 Complete setup finished!"
+
+.PHONY: migrate upgrade downgrade venv-check setup-playwright setup seed seed-clear
 
 # Create a new migration
 migrate: venv-check
@@ -24,6 +33,16 @@ upgrade: venv-check
 # Downgrade DB
 downgrade: venv-check
 	@$(ALEMBIC_CMD) downgrade $(if $(steps),$(steps),-1)
+
+# Seed database with sample candidates
+seed: venv-check
+	@echo "🌱 Seeding database with sample candidates..."
+	@source venv/bin/activate && DATABASE_URL=$(DATABASE_URL) python -m common.database.seeders
+
+# Clear seeded candidates
+seed-clear: venv-check
+	@echo "🗑️  Clearing seeded candidates..."
+	@source venv/bin/activate && DATABASE_URL=$(DATABASE_URL) python -m common.database.seeders --clear-only
 
 serve: venv-check
 	python main.py

@@ -34,7 +34,7 @@ prompt = ChatPromptTemplate.from_messages([
           }
         ]
         ```
-        After you finish return the results using the tool return_as_json, as it will be stored in a database
+        After you finish parse the results using the tool convert_to_json, and pass the result to the save_job_postings tool with the list of job_postings to save into the db
         """
     ),
     MessagesPlaceholder("agent_scratchpad"),

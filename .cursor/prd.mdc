@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+
+The project is a langchain based AI job finder that is next level by leveraging some tricks to find jobs directly in ATS.
+The idea is to have this features:
+
+* A telegram bot that you can chat and send commands to set your role, tech stack and location
+* A job seeker agent that leverages SerpAPI and Playwright Toolkit for Langchain to trigger some very explicit queries to ATS like "(lever OR ashby OR greenhouse) {candidate_role} {candidate_location}"
+* A candidate matcher agent that uses the info provisioned by the bot users to match them with the job postings that the job seeker agent collected.
+* A cron job that triggers both agents in a row everyday and saves only the new job postings that have been found.
+* A cron job that triggers periodic job notifications to telegram users.
+
+What's coming in the future:
+* Extend the job seeker agent to scrape workatastartup.com and "Who's hiring" posts from Hacker News to make the jobs postings base even bigger and match more candidates.

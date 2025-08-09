@@ -30,3 +30,7 @@ class CandidatesRepository:
 
     def get_by_id(self, id: int):
         return self.session.query(Candidate).filter_by(telegram_chat_id=id).first()
+    
+    def get_candidate_by_id(self, candidate_id: int):
+        """Get candidate by internal ID (not telegram_chat_id)"""
+        return self.session.query(Candidate).filter(Candidate.id == candidate_id).first()

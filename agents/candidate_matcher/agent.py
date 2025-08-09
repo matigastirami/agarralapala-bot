@@ -10,6 +10,7 @@ from agents.candidate_matcher.prompts import prompt
 from agents.common.abstract_agent import Agent
 from agents.common.tools.get_candidates import get_candidates
 from agents.common.tools.get_job_postings import get_job_postings
+from agents.common.tools.enrich_job_postings import enrich_job_postings
 from agents.common.tools.json_tools import convert_to_json
 from agents.common.tools.save_matches import save_job_matches
 from common.config.config import OPENAI_API_KEY
@@ -18,6 +19,7 @@ class CandidateMatcherAgent(Agent):
     def __init__(self):
         tools = [
             get_job_postings,
+            enrich_job_postings,
             convert_to_json,
             get_candidates,
             save_job_matches

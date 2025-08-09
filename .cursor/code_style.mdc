@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+
+This rule contains guidelines for the code style that should be strictly followed by cursor agent:
+
+* The code of this repository is based in Python 3.11+
+* Do not modify files that are not part of the implementation plan
+* Do not break current implementations just for the sake of improving something, if you are not asked to do that, please don't do.
+* Usage of classes is preferred, though not always is necessary to have so much boilerplate code.
+* Attach to SOLID principles but don't be so strict, try to keep the code maintainable but avoid the point in which you have to modify a lot of files for adding simple things.
+* Do not hallucinate, if anything is not clear, ask me instead of implemented wrong things that I'm gonna revert.
+* Always prefer DRY and KISS

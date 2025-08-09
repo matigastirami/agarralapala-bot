@@ -1,4 +1,6 @@
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime
+from typing import List
 
 from common.database.database import db_session
 from common.database.models.match import Match
@@ -20,3 +22,9 @@ class MatchesRepository:
             self.session.rollback()
         finally:
             self.session.close()
+    
+    def get_matches_since(self, since_date: datetime) -> List[Match]:
+        """Get matches created since a specific date"""
+        return self.session.query(Match).filter(
+            Match.created_at >= since_date
+        ).all()

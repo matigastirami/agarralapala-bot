@@ -10,11 +10,8 @@ A langchain-based agent that uses scrapping tools for looking for jobs and expos
 # Copy the .env example file and replace with actual values
 cp .env.example .env
 
-# Create a venv
-python3 -m venv venv
-
-# Activate the venv (works in MacOS at least)
-source venv/bin/activate
+# Create a venv and install dependencies
+make setup
 
 # Start the telegram bot and agents schedulers
 make serve
@@ -30,6 +27,34 @@ Then, go to Telegram app and chat @AgarralapalaBot or scan the QR below:
 <div align="center">
     <img src="docs/example_message.png" alt="AgarralapalaBot"/>
 </div>
+
+# New Features (v2.0)
+
+## Job Enrichment with Playwright
+The system now automatically enriches job postings by fetching detailed descriptions from job URLs using Playwright. This provides:
+- Detailed job descriptions
+- Requirements and qualifications
+- Benefits and perks
+- Salary information
+- Contact details
+
+## LangGraph Workflow Orchestration
+A new workflow system using LangGraph orchestrates the complete job matching process:
+1. **Job Fetching**: Original job seeker agent fetches job postings
+2. **Job Enrichment**: Playwright enriches job postings with detailed information
+3. **Candidate Matching**: Enhanced matching with enriched job data
+
+## Automated Notifications
+The system now automatically sends notifications to candidates about new job matches:
+- Runs every 6 hours
+- Sends personalized notifications via Telegram
+- Includes match scores and job details
+- Groups multiple matches for efficiency
+
+## Scheduled Processing
+Two separate cron jobs manage the workflow:
+- **Daily Job Enrichment**: Runs the complete workflow once per day
+- **Notification System**: Sends match notifications every 6 hours
 
 # Guides
 * Database Migrations: [Read](docs/migrations.md)

@@ -39,7 +39,7 @@ class TelegramBot:
         chat_id = update.effective_chat.id
         user_lang = self._detect_language(update)
         logging.info(f"Received /help command from {chat_id}")
-        await update.message.reply_markdown(self._get_message('welcome', user_lang))
+        await update.message.reply_markdown(self._get_message('help', user_lang))
 
     async def set_tech_stack(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id = update.effective_chat.id
@@ -108,3 +108,20 @@ class TelegramBot:
         logging.info('Starting telegram bot')
         self.app.run_polling()
         logging.info('Telegram bot started successfully')
+
+    async def send_message(self, chat_id: int, message: str):
+        """Send a message to a specific chat ID"""
+        try:
+            await self.app.bot.send_message(
+                chat_id=chat_id,
+                text=message,
+                parse_mode='Markdown'
+            )
+            logging.info(f"Message sent to chat_id {chat_id}")
+        except Exception as e:
+            logging.error(f"Error sending message to chat_id {chat_id}: {str(e)}")
+
+    async def send_match_notification(self, chat_id: int, matches: list):
+        """Send a formatted match notification"""
+        message = self._format_match_notification(matches)
+        await self.send_message(chat_id, message)

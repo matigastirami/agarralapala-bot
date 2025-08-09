@@ -4,6 +4,8 @@ import time
 from bot.telegram_bot import TelegramBot
 from crons.cron_manager import CronManager
 from crons.job_seeker_cron import JobSeekerCron
+from crons.job_enrichment_cron import JobEnrichmentCron
+from crons.notification_cron import NotificationCron
 
 # if __name__ == '__main__':
 #     if len(sys.argv) <= 1:
@@ -18,7 +20,12 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     cron_manager = CronManager()
-    cron_manager.register(JobSeekerCron())
+    
+    # Register all cron jobs
+    cron_manager.register(JobSeekerCron())  # Original job fetching
+    cron_manager.register(JobEnrichmentCron())  # New enrichment workflow
+    cron_manager.register(NotificationCron())  # New notification system
+    
     cron_manager.start()
 
     telegram_bot = TelegramBot()

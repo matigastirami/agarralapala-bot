@@ -9,13 +9,14 @@ from pydantic import SecretStr
 from agents.common.abstract_agent import Agent
 from agents.common.tools.get_candidates import get_candidates
 from agents.common.tools.google_search import serpapi_google_search
-from agents.common.tools.json_tools import return_as_json
+from agents.common.tools.json_tools import convert_to_json
+from agents.common.tools.save_job_postings import save_job_postings
 from agents.job_seeker.prompts import prompt
 from common.config.config import OPENAI_API_KEY
 
 class JobSeekerAgent(Agent):
     def __init__(self):
-        tools = [serpapi_google_search, return_as_json, get_candidates]
+        tools = [serpapi_google_search, convert_to_json, get_candidates, save_job_postings]
         llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=SecretStr(OPENAI_API_KEY))
         agent = create_openai_functions_agent(
             tools=tools,
