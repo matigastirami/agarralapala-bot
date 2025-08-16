@@ -3,6 +3,7 @@ from common.database.repositories.matches import MatchesRepository
 from common.database.repositories.candidates import CandidatesRepository
 from common.database.repositories.job_posting import JobPostingsRepository
 from bot.telegram_bot import TelegramBot
+from common.config.config import CRON_NOTIFICATION_INTERVAL_HOURS, CRON_NOTIFICATION_START_TIME
 import logging
 from datetime import datetime, timedelta
 import asyncio
@@ -20,7 +21,11 @@ class NotificationCron(CronJob):
 
     @property
     def interval_hours(self) -> int:
-        return 6  # Run every 6 hours
+        return CRON_NOTIFICATION_INTERVAL_HOURS
+    
+    @property
+    def start_time(self) -> str:
+        return CRON_NOTIFICATION_START_TIME
 
     def run(self):
         logging.info("Starting notification process")

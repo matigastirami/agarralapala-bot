@@ -45,6 +45,45 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
+        },
+        {
+            "name": "Test Job Enrichment",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_job_enrichment.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false
+        },
+        {
+            "name": "Test Job Enrichment Cron",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/crons/job_enrichment_cron.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Workflow Step by Step",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/debug_workflow.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false
         }
     ]
 }

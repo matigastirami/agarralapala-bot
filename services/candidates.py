@@ -19,3 +19,7 @@ class CandidatesService:
 
     def get_by_id(self, id: int):
         return self.candidates_repo.get_by_id(id)
+    
+    def get_by_telegram_id(self, telegram_id: int):
+        """Get candidate by telegram chat ID"""
+        return self.candidates_repo.get_by_id(telegram_id)

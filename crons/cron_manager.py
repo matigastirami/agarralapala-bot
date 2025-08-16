@@ -1,7 +1,9 @@
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 class CronJob(ABC):
     @property
@@ -12,6 +14,12 @@ class CronJob(ABC):
     @property
     @abstractmethod
     def interval_hours(self) -> int:
+        pass
+    
+    @property
+    @abstractmethod
+    def start_time(self) -> str:
+        """Start time in HH:MM format (24-hour)"""
         pass
 
     @abstractmethod
@@ -29,17 +37,40 @@ class CronManager:
 
     def start(self):
         for job in self.jobs:
-            self.scheduler.add_job(
-                job.run,
-                'interval',
-                hours=job.interval_hours,
-                id=job.name,
-                replace_existing=True
-            )
-            logging.info(f"[CronManager] Scheduled job {job.name} every {job.interval_hours} hours")
+            # Parse start time
+            try:
+                hour, minute = map(int, job.start_time.split(':'))
+                start_time = datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0)
+                
+                # If start time has passed today, schedule for tomorrow
+                if start_time <= datetime.now():
+                    start_time = start_time.replace(day=start_time.day + 1)
+                
+                # Schedule job with both interval and start time
+                self.scheduler.add_job(
+                    job.run,
+                    'interval',
+                    hours=job.interval_hours,
+                    start_date=start_time,
+                    id=job.name,
+                    replace_existing=True
+                )
+                logging.info(f"[CronManager] Scheduled job {job.name} every {job.interval_hours} hours starting at {start_time.strftime('%H:%M')}")
+                
+            except Exception as e:
+                logging.error(f"[CronManager] Error scheduling job {job.name}: {e}")
+                # Fallback to simple interval scheduling
+                self.scheduler.add_job(
+                    job.run,
+                    'interval',
+                    hours=job.interval_hours,
+                    id=job.name,
+                    replace_existing=True
+                )
+                logging.info(f"[CronManager] Scheduled job {job.name} every {job.interval_hours} hours (fallback)")
 
         self.scheduler.start()
-        logging.info("[CronManger] Scheduler started")
+        logging.info("[CronManager] Scheduler started")
 
     def shutdown(self):
         self.scheduler.shutdown()

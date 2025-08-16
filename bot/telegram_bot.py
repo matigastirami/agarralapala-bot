@@ -7,11 +7,13 @@ from bot.constants import MESSAGES, COMMAND_USE_GUIDES
 from common.config.config import TELEGRAM_BOT_TOKEN
 from common.types.upsert_candidate_input import UpsertCandidateInput
 from services.candidates import CandidatesService
+from services.notification_service import NotificationService
 
 class TelegramBot:
     def __init__(self):
         self.app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
         self.candidates_service = CandidatesService()
+        self.notification_service = NotificationService()
         self._register_handlers()
 
     def _register_handlers(self):
@@ -20,6 +22,7 @@ class TelegramBot:
         self.app.add_handler(CommandHandler('setstack', self.set_tech_stack))
         self.app.add_handler(CommandHandler('setrole', self.set_role))
         self.app.add_handler(CommandHandler('setlocation', self.set_location))
+        self.app.add_handler(CommandHandler('matches', self.get_matches))
         self.app.add_handler(CommandHandler('myinfo', self.get_my_info))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.non_command_message))
 
@@ -90,6 +93,41 @@ class TelegramBot:
             data=UpsertCandidateInput(location=location)
         )
         await update.message.reply_markdown(self._get_message('location_saved', user_lang, location=location))
+
+    async def get_matches(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat_id = update.effective_chat.id
+        user_lang = self._detect_language(update)
+        logging.info(f"Received /matches command from chat_id {chat_id}")
+        
+        try:
+            # Get candidate by telegram chat ID
+            candidate = self.candidates_service.get_by_telegram_id(chat_id)
+            if not candidate:
+                await update.message.reply_markdown(
+                    self._get_message('candidate_not_found', user_lang)
+                )
+                return
+            
+            # Get matches for this candidate
+            from common.database.repositories.matches import MatchesRepository
+            matches_repo = MatchesRepository()
+            matches = matches_repo.get_matches_by_candidate(candidate.id)
+            
+            if not matches:
+                await update.message.reply_markdown(
+                    self._get_message('no_matches_found', user_lang)
+                )
+                return
+            
+            # Format and send matches
+            message = self.notification_service.format_matches_for_display(matches, user_lang)
+            await update.message.reply_markdown(message)
+            
+        except Exception as e:
+            logging.error(f"Error in /matches command: {e}")
+            await update.message.reply_markdown(
+                self._get_message('error_occurred', user_lang)
+            )
 
     async def get_my_info(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         pass

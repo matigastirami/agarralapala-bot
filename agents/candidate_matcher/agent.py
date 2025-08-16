@@ -42,7 +42,7 @@ class CandidateMatcherAgent(Agent):
             kwargs.get('input', {}),
             config={
                 "configurable": {
-                    "max_steps": 25
+                    "max_steps": 250
                 },
             }
         )

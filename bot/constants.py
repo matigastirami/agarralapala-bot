@@ -13,6 +13,7 @@ MESSAGES = {
             "📌 *Useful commands:*\n"
             "- `/setrole <role>` → e.g. `/setrole Backend Developer`\n"
             "- `/setlocation <location>` → e.g. `/setlocation Buenos Aires`\n"
+            "- `/matches` → View your current job matches\n"
             "- `/myinfo` → View your current setup\n\n"
             "💡 *Tip:* The more specific you are, the better the matches I’ll send you."
         ),
@@ -23,6 +24,7 @@ MESSAGES = {
             "📌 *Comandos útiles:*\n"
             "- `/setrole <rol>` → Ej: `/setrole Backend Developer`\n"
             "- `/setlocation <ubicación>` → Ej: `/setlocation Buenos Aires`\n"
+            "- `/matches` → Ver tus coincidencias de trabajo actuales\n"
             "- `/myinfo` → Ver tu configuración actual\n\n"
             "💡 *Tip:* Cuanto más específico seas, mejor serán las coincidencias que te enviaré."
         )
@@ -144,6 +146,7 @@ MESSAGES = {
             "  e.g. `/setrole Backend Developer`\n"
             "- `/setlocation <location>` → Set your preferred location.\n"
             "  e.g. `/setlocation Buenos Aires`\n"
+            "- `/matches` → View your current job matches.\n"
             "- `/myinfo` → View your current role, location, and alerts.\n"
             "- `/save` → Save a job I sent you.\n"
             "- `/help` → Show this help message.\n\n"
@@ -156,10 +159,50 @@ MESSAGES = {
             "  Ej: `/setrole Backend Developer`\n"
             "- `/setlocation <ubicación>` → Configura tu ubicación preferida.\n"
             "  Ej: `/setlocation Buenos Aires`\n"
+            "- `/matches` → Ver tus coincidencias de trabajo actuales.\n"
             "- `/myinfo` → Ver tu rol, ubicación y alertas actuales.\n"
             "- `/guardar` → Guardar una oferta que te envié.\n"
             "- `/help` → Muestra este mensaje de ayuda.\n\n"
             "💡 *Tip:* Cuanto más específico seas con tu rol y ubicación, mejores serán las coincidencias."
+        )
+    },
+
+    "candidate_not_found": {
+        "en": (
+            "❌ **Candidate not found**\n"
+            "It seems you haven't set up your profile yet.\n"
+            "Please use `/setrole` and `/setlocation` first to get started."
+        ),
+        "es": (
+            "❌ **Candidato no encontrado**\n"
+            "Parece que aún no has configurado tu perfil.\n"
+            "Por favor usa `/setrole` y `/setlocation` primero para comenzar."
+        )
+    },
+
+    "no_matches_found": {
+        "en": (
+            "🔍 **No matches found**\n"
+            "We haven't found any job matches for you yet.\n"
+            "Don't worry! We'll keep searching and notify you when we find something."
+        ),
+        "es": (
+            "🔍 **No se encontraron coincidencias**\n"
+            "Aún no hemos encontrado ofertas de trabajo que coincidan contigo.\n"
+            "¡No te preocupes! Seguiremos buscando y te notificaremos cuando encontremos algo."
+        )
+    },
+
+    "error_occurred": {
+        "en": (
+            "⚠️ **An error occurred**\n"
+            "Sorry, something went wrong while fetching your matches.\n"
+            "Please try again later or contact support if the problem persists."
+        ),
+        "es": (
+            "⚠️ **Ocurrió un error**\n"
+            "Lo sentimos, algo salió mal al buscar tus coincidencias.\n"
+            "Por favor intenta de nuevo más tarde o contacta soporte si el problema persiste."
         )
     }
 }

@@ -1,20 +1,38 @@
 DATABASE_URL ?= $(shell grep '^DATABASE_URL=' .env | cut -d '=' -f2-)
-ALEMBIC_DIR = common/database/migrations
-ALEMBIC_CMD = source venv/bin/activate && DATABASE_URL=$(DATABASE_URL) alembic -c alembic.ini
 
-# Check if venv exists, if not create it and install requirements
+# Tell the Makefile when we’re inside Docker (set in Dockerfile)
+IN_DOCKER ?= 0
+
+# Commands abstracted for local vs docker
+ifeq ($(IN_DOCKER),1)
+  ACTIVATE :=
+  PY := python
+  PIP := pip
+else
+  ACTIVATE := source venv/bin/activate &&
+  PY := venv/bin/python
+  PIP := venv/bin/pip
+endif
+
+ALEMBIC_DIR = common/database/migrations
+ALEMBIC_CMD = $(ACTIVATE) DATABASE_URL=$(DATABASE_URL) $(PY) -m alembic -c alembic.ini
+
+# Only create a venv locally
 venv-check:
+ifeq ($(IN_DOCKER),1)
+	@echo "🐳 Skipping venv inside Docker"
+else
 	@test -d "venv" || ( \
 		echo "🛠️  Creating virtual environment..." && \
 		python3 -m venv venv && \
-		source venv/bin/activate && \
-		pip install -r requirements.txt \
+		$(ACTIVATE) $(PIP) install -r requirements.txt \
 	)
+endif
 
 # Setup Playwright browsers
 setup-playwright: venv-check
 	@echo "🎭 Installing Playwright browsers..."
-	@source venv/bin/activate && python install_playwright.py
+	@$(ACTIVATE) $(PY) install_playwright.py
 
 # Complete setup including migrations and Playwright
 setup: venv-check setup-playwright
@@ -22,27 +40,39 @@ setup: venv-check setup-playwright
 
 .PHONY: migrate upgrade downgrade venv-check setup-playwright setup seed seed-clear
 
-# Create a new migration
 migrate: venv-check
 	@$(ALEMBIC_CMD) revision --autogenerate -m "$(name)"
 
-# Upgrade DB
 upgrade: venv-check
 	@$(ALEMBIC_CMD) upgrade $(if $(target),$(target),head)
 
-# Downgrade DB
 downgrade: venv-check
 	@$(ALEMBIC_CMD) downgrade $(if $(steps),$(steps),-1)
 
-# Seed database with sample candidates
 seed: venv-check
 	@echo "🌱 Seeding database with sample candidates..."
-	@source venv/bin/activate && DATABASE_URL=$(DATABASE_URL) python -m common.database.seeders
+	@$(ACTIVATE) DATABASE_URL=$(DATABASE_URL) $(PY) -m common.database.seeders
 
-# Clear seeded candidates
 seed-clear: venv-check
 	@echo "🗑️  Clearing seeded candidates..."
-	@source venv/bin/activate && DATABASE_URL=$(DATABASE_URL) python -m common.database.seeders --clear-only
+	@$(ACTIVATE) DATABASE_URL=$(DATABASE_URL) $(PY) -m common.database.seeders --clear-only
 
 serve: venv-check
-	python main.py
+	$(PY) main.py
+
+# Testing targets
+test-enrichment: venv-check
+	@echo "🧪 Testing job enrichment workflow..."
+	@$(ACTIVATE) $(PY) test_job_enrichment.py
+
+test-enrichment-cron: venv-check
+	@echo "🧪 Testing job enrichment cron..."
+	@$(ACTIVATE) $(PY) crons/job_enrichment_cron.py
+
+debug-workflow: venv-check
+	@echo "🔍 Debugging workflow step by step..."
+	@$(ACTIVATE) $(PY) debug_workflow.py
+
+# Quick test all
+test-all: test-enrichment test-enrichment-cron debug-workflow
+	@echo "✅ All tests completed!"

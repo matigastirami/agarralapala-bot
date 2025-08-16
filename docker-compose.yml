@@ -3,7 +3,7 @@ services:
   app:
     build: .
     container_name: bot
-    env_file: .env
+    env_file: .env.docker
     depends_on:
       - db
     command: python main.py

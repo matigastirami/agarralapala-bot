@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, Text
+from sqlalchemy import Column, Integer, String, DateTime, func, Text, UniqueConstraint
 from . import Base
 
 class JobPosting(Base):
@@ -7,7 +7,7 @@ class JobPosting(Base):
     id = Column(Integer, primary_key=True, index=True)
     job_title = Column(String(length=128), nullable=False)
     company_name = Column(String(length=128), nullable=False)
-    job_link = Column(String(length=512), nullable=False)
+    job_link = Column(String(length=512), nullable=False, unique=True)
     quick_description = Column(String(length=2048))
 
     company_type = Column(String(length=32), nullable=True)

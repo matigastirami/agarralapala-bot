@@ -1,0 +1,6 @@
+---
+alwaysApply: true
+---
+This is a python project that needs virtual env to do anything in local.
+The name of the venv must be 'venv' for easier identification.
+Cursor must always check the existence of venv and activate it to run anything.

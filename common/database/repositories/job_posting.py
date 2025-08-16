@@ -10,17 +10,77 @@ class JobPostingsRepository:
         self.session = db_session()
 
     def save_job_postings(self, jobs_list: list[dict]):
-        print(jobs_list)
-        for job in jobs_list:
-            job_obj = JobPosting(**job)
-            self.session.add(job_obj)
+        """
+        Upsert job postings - update if exists (by job_link), insert if new
+        """
+        print(f"Upserting {len(jobs_list)} job postings")
+        
+        successful_upserts = 0
+        failed_upserts = 0
+        
+        for job_data in jobs_list:
+            try:
+                # Check if job posting already exists by job_link
+                existing_job = self.session.query(JobPosting).filter(
+                    JobPosting.job_link == job_data['job_link']
+                ).first()
+                
+                if existing_job:
+                    # Update existing job posting
+                    print(f"Updating existing job: {job_data['job_title']} at {job_data['company_name']}")
+                    for key, value in job_data.items():
+                        if hasattr(existing_job, key):
+                            setattr(existing_job, key, value)
+                else:
+                    # Insert new job posting
+                    print(f"Inserting new job: {job_data['job_title']} at {job_data['company_name']}")
+                    job_obj = JobPosting(**job_data)
+                    self.session.add(job_obj)
+                
+                # Commit each job individually to avoid transaction conflicts
+                self.session.commit()
+                successful_upserts += 1
+                
+            except Exception as e:
+                print(f"Error processing job {job_data.get('job_title', 'Unknown')}: {e}")
+                self.session.rollback()
+                failed_upserts += 1
+                continue
 
+        print(f"Successfully upserted {successful_upserts} job postings, {failed_upserts} failed")
+        
+        if failed_upserts > 0:
+            raise Exception(f"Failed to upsert {failed_upserts} job postings")
+        
+        self.session.close()
+
+    def upsert_job_posting(self, job_data: dict):
+        """
+        Upsert a single job posting
+        """
         try:
+            existing_job = self.session.query(JobPosting).filter(
+                JobPosting.job_link == job_data['job_link']
+            ).first()
+            
+            if existing_job:
+                # Update existing job posting
+                for key, value in job_data.items():
+                    if hasattr(existing_job, key):
+                        setattr(existing_job, key, value)
+                print(f"Updated job: {job_data['job_title']}")
+            else:
+                # Insert new job posting
+                job_obj = JobPosting(**job_data)
+                self.session.add(job_obj)
+                print(f"Inserted new job: {job_data['job_title']}")
+            
             self.session.commit()
-        except IntegrityError:
+            return existing_job or job_obj
+            
+        except Exception as e:
             self.session.rollback()
-        finally:
-            self.session.close()
+            raise e
 
     def get_job_postings(self):
         return self.session.query(JobPosting).all()
@@ -61,5 +121,36 @@ class JobPostingsRepository:
         except Exception as e:
             self.session.rollback()
             raise e
-        finally:
+        # Don't close session here - let the caller manage it
+    
+    def get_by_id(self, job_id: int):
+        """Get a single job posting by ID"""
+        try:
+            return self.session.query(JobPosting).filter(JobPosting.id == job_id).first()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+        # Don't close session here - let the caller manage it
+
+    def get_by_job_link(self, job_link: str):
+        """Get a single job posting by job_link"""
+        try:
+            return self.session.query(JobPosting).filter(JobPosting.job_link == job_link).first()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+        # Don't close session here - let the caller manage it
+
+    def exists_by_job_link(self, job_link: str) -> bool:
+        """Check if a job posting exists by job_link"""
+        try:
+            return self.session.query(JobPosting).filter(JobPosting.job_link == job_link).first() is not None
+        except Exception as e:
+            self.session.rollback()
+            raise e
+        # Don't close session here - let the caller manage it
+
+    def close_session(self):
+        """Close the session - call this when done with the repository"""
+        if self.session:
             self.session.close()

@@ -15,8 +15,9 @@ class CandidatesRepository:
         if candidate:
             candidate.role = data.role if data.role else candidate.role
             candidate.location = data.location if data.location else candidate.location
-            candidate.tech_stack = data.tech_stack if data.tech_stack else candidate.location
+            candidate.tech_stack = data.tech_stack if data.tech_stack else candidate.tech_stack
             candidate.language = data.language if data.language else candidate.language
+        self.session.commit()
 
     def create(self, data: UpsertCandidateInput):
         new_candidate = Candidate()
@@ -34,3 +35,9 @@ class CandidatesRepository:
     def get_candidate_by_id(self, candidate_id: int):
         """Get candidate by internal ID (not telegram_chat_id)"""
         return self.session.query(Candidate).filter(Candidate.id == candidate_id).first()
+    
+    def get_candidates_with_telegram(self):
+        """Get all candidates that have a telegram_chat_id"""
+        return self.session.query(Candidate).filter(
+            Candidate.telegram_chat_id.isnot(None)
+        ).all()
