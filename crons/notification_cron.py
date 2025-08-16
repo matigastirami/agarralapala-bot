@@ -79,24 +79,40 @@ class NotificationCron(CronJob):
             # Get job posting details
             job_posting = self.job_postings_repo.get_job_postings_by_ids([match.job_posting_id])[0]
             
-            return f"""
-🎯 You have a new job match!
+            # Convert match score to percentage (assuming it's stored as decimal 0-1)
+            match_percentage = int(match.match_score * 100)
+            
+            # Determine location info
+            location_info = "Remote"  # Default, could be enhanced with actual location data
+            
+            return f"""🎯 New Job Opportunity Found!
 
-**{job_posting.job_title}** at {job_posting.company_name}
-Match Score: {match.match_score:.1f}%
+{job_posting.job_title}
+🏢 {job_posting.company_name}
+📍 {location_info}
+⭐ Match Score: {match_percentage}%
+🔗 {job_posting.job_link}
 
-{match.strengths if match.strengths else ''}
-
-Apply here: {job_posting.job_link}
-            """.strip()
+{match.strengths if match.strengths else ''}""".strip()
         else:
-            message = f"🎯 You have {len(matches)} new job matches!\n\n"
+            message = f"🎯 New Job Opportunities Found!\n\n"
             for i, match in enumerate(matches[:5], 1):  # Limit to top 5
                 # Get job posting details
                 job_posting = self.job_postings_repo.get_job_postings_by_ids([match.job_posting_id])[0]
-                message += f"{i}. **{job_posting.job_title}** at {job_posting.company_name} ({match.match_score:.1f}%)\n"
+                
+                # Convert match score to percentage
+                match_percentage = int(match.match_score * 100)
+                
+                # Determine location info
+                location_info = "Remote"  # Default, could be enhanced with actual location data
+                
+                message += f"{i}. {job_posting.job_title}\n"
+                message += f"   🏢 {job_posting.company_name}\n"
+                message += f"   📍 {location_info}\n"
+                message += f"   ⭐ Match Score: {match_percentage}%\n"
+                message += f"   🔗 {job_posting.job_link}\n\n"
             
             if len(matches) > 5:
-                message += f"\n... and {len(matches) - 5} more matches!"
+                message += f"... and {len(matches) - 5} more matches!"
             
             return message

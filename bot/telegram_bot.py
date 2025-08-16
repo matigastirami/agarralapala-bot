@@ -153,7 +153,7 @@ class TelegramBot:
             await self.app.bot.send_message(
                 chat_id=chat_id,
                 text=message,
-                parse_mode='Markdown'
+                parse_mode=None  # Send as plain text to avoid markdown parsing issues
             )
             logging.info(f"Message sent to chat_id {chat_id}")
         except Exception as e:
