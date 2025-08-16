@@ -69,7 +69,7 @@ Two separate cron jobs manage the workflow:
 * Alembic (Migrations system)
 * OpenAI
 
-# Architecture
+# Architecture (Out-of-date diagram)
 The system has a LangChain agent backed by OpenAI API, and uses SerpAPI and hrequests to perform scrapping over results.
 ![Architecture Diagram](docs/architecture.png)
 
