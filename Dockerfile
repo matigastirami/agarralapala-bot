@@ -18,6 +18,5 @@ ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 IN_DOCKER=1
 # If you need Playwright in the container:
 # RUN python -m playwright install --with-deps chromium
 
-# Optionally run migrations at start (if desired):
-# CMD make upgrade && make serve
-CMD ["make", "serve"]
+# Run migrations at start to ensure database is up to date
+CMD make upgrade && make serve
