@@ -25,7 +25,8 @@ class TelegramBot:
             BotCommand("setrole", "👨‍💻 Set your job role (e.g., Backend Developer)"),
             BotCommand("setlocation", "📍 Set your location (e.g., Buenos Aires)"),
             BotCommand("setstack", "🛠 Set your tech stack (e.g., Python, Node.js)"),
-            BotCommand("matches", "🎯 View your job matches"),
+            BotCommand("matches", "🎯 View your job matches (optional: add search query)"),
+            BotCommand("matcheshelp", "🔍 Learn how to filter your matches"),
             BotCommand("myinfo", "👤 View your profile information"),
         ]
         
@@ -81,6 +82,7 @@ class TelegramBot:
         self.app.add_handler(CommandHandler('setrole', self.set_role))
         self.app.add_handler(CommandHandler('setlocation', self.set_location))
         self.app.add_handler(CommandHandler('matches', self.get_matches))
+        self.app.add_handler(CommandHandler('matcheshelp', self.get_matches_help))
         self.app.add_handler(CommandHandler('myinfo', self.get_my_info))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.non_command_message))
 
@@ -187,23 +189,63 @@ class TelegramBot:
                 )
                 return
             
-            # Get matches for this candidate
+            # Get optional query parameter
+            query = None
+            if context.args:
+                query = " ".join(context.args).strip()
+                logging.info(f"Filtering matches with query: '{query}' for chat_id {chat_id}")
+            
+            # Get matches for this candidate with optional filtering
             from common.database.repositories.matches import MatchesRepository
             matches_repo = MatchesRepository()
-            matches = matches_repo.get_matches_by_candidate(candidate.id)
+            
+            if query:
+                matches = matches_repo.get_matches_by_candidate_with_filter(candidate.id, query)
+            else:
+                matches = matches_repo.get_matches_by_candidate(candidate.id)
             
             if not matches:
-                await update.message.reply_markdown(
-                    self._get_message('no_matches_found', user_lang)
-                )
+                if query:
+                    # Show filtered no results message
+                    if user_lang == "es":
+                        message = f"🔍 **No se encontraron coincidencias**\nNo hay ofertas que coincidan con '{query}'.\n\n💡 *Tip:* Intenta con términos más generales o usa `/matches` sin filtro para ver todas tus coincidencias."
+                    else:
+                        message = f"🔍 **No matches found**\nNo job postings match '{query}'.\n\n💡 *Tip:* Try more general terms or use `/matches` without a filter to see all your matches."
+                else:
+                    message = self._get_message('no_matches_found', user_lang)
+                
+                await update.message.reply_markdown(message)
                 return
             
             # Format and send matches
             message = self.notification_service.format_matches_for_display(matches, user_lang)
+            
+            # Add filter info if query was used
+            if query:
+                if user_lang == "es":
+                    filter_info = f"\n\n🔍 *Filtrado por:* `{query}`\n💡 *Tip:* Usa `/matches` sin filtro para ver todas tus coincidencias."
+                else:
+                    filter_info = f"\n\n🔍 *Filtered by:* `{query}`\n💡 *Tip:* Use `/matches` without a filter to see all your matches."
+                message += filter_info
+            
             await update.message.reply_text(message)
             
         except Exception as e:
             logging.error(f"Error in /matches command: {e}")
+            await update.message.reply_markdown(
+                self._get_message('error_occurred', user_lang)
+            )
+
+    async def get_matches_help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat_id = update.effective_chat.id
+        user_lang = self._detect_language(update)
+        logging.info(f"Received /matcheshelp command from chat_id {chat_id}")
+        
+        try:
+            help_message = self._get_message('matches_filter_help', user_lang)
+            await update.message.reply_markdown(help_message)
+        except Exception as e:
+            logging.error(f"Error in /matcheshelp command: {e}")
             await update.message.reply_markdown(
                 self._get_message('error_occurred', user_lang)
             )

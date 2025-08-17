@@ -1,9 +1,12 @@
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+from sqlalchemy import or_, and_
+import logging
 
 from common.database.database import db_session
 from common.database.models.match import Match
+from common.database.models.job_posting import JobPosting
 
 
 class MatchesRepository:
@@ -103,6 +106,53 @@ class MatchesRepository:
         return self.session.query(Match).filter(
             Match.candidate_id == candidate_id
         ).order_by(Match.created_at.desc()).all()
+    
+    def get_matches_by_candidate_with_filter(self, candidate_id: int, query: Optional[str] = None) -> List[Match]:
+        """
+        Get matches for a specific candidate with optional filtering
+        
+        Args:
+            candidate_id: The candidate ID to filter by
+            query: Optional search query to filter job postings by title, company, description, etc.
+        
+        Returns:
+            List of matches that match the criteria
+        """
+        try:
+            if not query or query.strip() == "":
+                # No filter, return all matches for the candidate
+                return self.session.query(Match).filter(
+                    Match.candidate_id == candidate_id
+                ).order_by(Match.created_at.desc()).all()
+            
+            # Clean and prepare the search query
+            search_term = f"%{query.strip().lower()}%"
+            
+            # Use explicit join with ON clause to avoid ambiguity
+            # Join Match with JobPosting on job_posting_id
+            filtered_query = self.session.query(Match).join(
+                JobPosting, Match.job_posting_id == JobPosting.id
+            ).filter(
+                Match.candidate_id == candidate_id,
+                or_(
+                    JobPosting.job_title.ilike(search_term),
+                    JobPosting.company_name.ilike(search_term),
+                    JobPosting.quick_description.ilike(search_term),
+                    JobPosting.detailed_description.ilike(search_term),
+                    JobPosting.requirements.ilike(search_term),
+                    JobPosting.tech_stack.ilike(search_term),
+                    JobPosting.industry.ilike(search_term),
+                    JobPosting.company_type.ilike(search_term)
+                )
+            ).order_by(Match.created_at.desc())
+            
+            return filtered_query.all()
+            
+        except Exception as e:
+            logging.error(f"Error filtering matches for candidate {candidate_id} with query '{query}': {e}")
+            self.session.rollback()
+            # Return empty list on error to prevent crashes
+            return []
     
     def get_match_by_candidate_and_job(self, candidate_id: int, job_posting_id: int):
         """Get a specific match by candidate_id and job_posting_id"""

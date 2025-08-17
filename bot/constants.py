@@ -2,6 +2,7 @@ COMMAND_USE_GUIDES = {
     "SET_ROLE": "'/setrole [YOUR_ROLE]'\nExample: /setrole backend engineer\n",
     "SET_LOCATION": "'/setlocation [YOUR_LOCATION]'\nExample: /setlocation Argentina\n",
     "SET_STACK": "'/setstack [TECH_1,TECH_2, etc]'\nExample: /setstack python,nodejs\n",
+    "MATCHES": "'/matches [optional: search query]'\nExample: /matches python\nExample: /matches remote\nExample: /matches startup\n",
 }
 
 MESSAGES = {
@@ -13,7 +14,8 @@ MESSAGES = {
             "📌 *Useful commands:*\n"
             "- `/setrole <role>` → e.g. `/setrole Backend Developer`\n"
             "- `/setlocation <location>` → e.g. `/setlocation Buenos Aires`\n"
-            "- `/matches` → View your current job matches\n"
+            "- `/matches [query]` → View your current job matches\n"
+            "- `/matcheshelp` → Learn how to filter matches\n"
             "- `/myinfo` → View your current setup\n\n"
             "💡 *Tip:* The more specific you are, the better the matches I’ll send you."
         ),
@@ -24,7 +26,8 @@ MESSAGES = {
             "📌 *Comandos útiles:*\n"
             "- `/setrole <rol>` → Ej: `/setrole Backend Developer`\n"
             "- `/setlocation <ubicación>` → Ej: `/setlocation Buenos Aires`\n"
-            "- `/matches` → Ver tus coincidencias de trabajo actuales\n"
+            "- `/matches [consulta]` → Ver tus coincidencias de trabajo actuales\n"
+            "- `/matcheshelp` → Aprende cómo filtrar coincidencias\n"
             "- `/myinfo` → Ver tu configuración actual\n\n"
             "💡 *Tip:* Cuanto más específico seas, mejor serán las coincidencias que te enviaré."
         )
@@ -146,7 +149,9 @@ MESSAGES = {
             "  e.g. `/setrole Backend Developer`\n"
             "- `/setlocation <location>` → Set your preferred location.\n"
             "  e.g. `/setlocation Buenos Aires`\n"
-            "- `/matches` → View your current job matches.\n"
+            "- `/matches [query]` → View your current job matches.\n"
+            "  e.g. `/matches python` or `/matches remote`\n"
+            "- `/matcheshelp` → Learn how to filter your matches.\n"
             "- `/myinfo` → View your current role, location, and alerts.\n"
             "- `/save` → Save a job I sent you.\n"
             "- `/help` → Show this help message.\n\n"
@@ -159,7 +164,9 @@ MESSAGES = {
             "  Ej: `/setrole Backend Developer`\n"
             "- `/setlocation <ubicación>` → Configura tu ubicación preferida.\n"
             "  Ej: `/setlocation Buenos Aires`\n"
-            "- `/matches` → Ver tus coincidencias de trabajo actuales.\n"
+            "- `/matches [consulta]` → Ver tus coincidencias de trabajo actuales.\n"
+            "  Ej: `/matches python` o `/matches remoto`\n"
+            "- `/matcheshelp` → Aprende cómo filtrar tus coincidencias.\n"
             "- `/myinfo` → Ver tu rol, ubicación y alertas actuales.\n"
             "- `/guardar` → Guardar una oferta que te envié.\n"
             "- `/help` → Muestra este mensaje de ayuda.\n\n"
@@ -203,6 +210,39 @@ MESSAGES = {
             "⚠️ **Ocurrió un error**\n"
             "Lo sentimos, algo salió mal al buscar tus coincidencias.\n"
             "Por favor intenta de nuevo más tarde o contacta soporte si el problema persiste."
+        )
+    },
+
+    "matches_filter_help": {
+        "en": (
+            "🔍 **Matches Filtering**\n\n"
+            "You can filter your matches by searching across:\n"
+            "• Job titles\n"
+            "• Company names\n"
+            "• Job descriptions\n"
+            "• Tech stack requirements\n"
+            "• Industry/company type\n\n"
+            "Examples:\n"
+            "• `/matches python` → Python jobs\n"
+            "• `/matches remote` → Remote positions\n"
+            "• `/matches startup` → Startup companies\n"
+            "• `/matches backend` → Backend roles\n\n"
+            "💡 *Tip:* Use `/matches` without a query to see all your matches."
+        ),
+        "es": (
+            "🔍 **Filtrado de Coincidencias**\n\n"
+            "Puedes filtrar tus coincidencias buscando en:\n"
+            "• Títulos de trabajo\n"
+            "• Nombres de empresas\n"
+            "• Descripciones de trabajo\n"
+            "• Requisitos de stack tecnológico\n"
+            "• Industria/tipo de empresa\n\n"
+            "Ejemplos:\n"
+            "• `/matches python` → Trabajos con Python\n"
+            "• `/matches remoto` → Posiciones remotas\n"
+            "• `/matches startup` → Empresas startup\n"
+            "• `/matches backend` → Roles de backend\n\n"
+            "💡 *Tip:* Usa `/matches` sin consulta para ver todas tus coincidencias."
         )
     }
 }
