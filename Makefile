@@ -1,6 +1,6 @@
 DATABASE_URL ?= $(shell grep '^DATABASE_URL=' .env | cut -d '=' -f2-)
 
-# Tell the Makefile when we’re inside Docker (set in Dockerfile)
+# Tell the Makefile when we're inside Docker (set in Dockerfile)
 IN_DOCKER ?= 0
 
 # Commands abstracted for local vs docker
@@ -61,9 +61,13 @@ serve: venv-check
 	$(PY) main.py
 
 # Testing targets
-test-enrichment: venv-check
-	@echo "🧪 Testing job enrichment workflow..."
-	@$(ACTIVATE) $(PY) test_job_enrichment.py
+test-job-enricher: venv-check
+	@echo "🧪 Testing job enricher agent..."
+	@$(ACTIVATE) $(PY) agents/job_enricher/agent.py
+
+test-workflow: venv-check
+	@echo "🧪 Testing job matching workflow..."
+	@$(ACTIVATE) $(PY) workflows/job_matching_workflow.py
 
 test-enrichment-cron: venv-check
 	@echo "🧪 Testing job enrichment cron..."
@@ -74,5 +78,5 @@ debug-workflow: venv-check
 	@$(ACTIVATE) $(PY) debug_workflow.py
 
 # Quick test all
-test-all: test-enrichment test-enrichment-cron debug-workflow
+test-all: test-job-enricher test-workflow test-enrichment-cron debug-workflow
 	@echo "✅ All tests completed!"

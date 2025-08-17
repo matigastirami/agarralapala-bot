@@ -33,6 +33,34 @@
             }
         },
         {
+            "name": "Job Enricher Agent",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/agents/job_enricher/agent.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+            "python": "${workspaceFolder}/venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Job Matching Workflow",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/workflows/job_matching_workflow.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": true,
+            "python": "${workspaceFolder}/venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
             "name": "Bot (make serve)",
             "type": "debugpy",
             "request": "launch",
@@ -47,20 +75,7 @@
             }
         },
         {
-            "name": "Test Job Enrichment",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/test_job_enrichment.py",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "python": "${workspaceFolder}/venv/bin/python",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "justMyCode": false
-        },
-        {
-            "name": "Test Job Enrichment Cron",
+            "name": "Job Enrichment Cron",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/crons/job_enrichment_cron.py",
@@ -90,6 +105,19 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/test_notification_cron.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false
+        },
+        {
+            "name": "Test Notification System (notified_at)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/crons/match_notification_cron.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "python": "${workspaceFolder}/venv/bin/python",

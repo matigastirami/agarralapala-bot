@@ -96,7 +96,8 @@ def debug_enrichment_tool_specifically():
         logger.info("Testing database connection...")
         repo = JobPostingsRepository()
         jobs = repo.get_job_postings()
-        logger.info(f"✅ Database connection successful. Found {len(jobs)} job postings")
+        unenriched_jobs = repo.get_unenriched_job_postings()
+        logger.info(f"✅ Database connection successful. Found {len(jobs)} total job postings, {len(unenriched_jobs)} unenriched")
         
         # Test enrichment tool with empty list
         logger.info("Testing enrichment tool with empty list...")

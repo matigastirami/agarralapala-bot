@@ -85,6 +85,12 @@ class JobPostingsRepository:
     def get_job_postings(self):
         return self.session.query(JobPosting).all()
     
+    def get_unenriched_job_postings(self):
+        """Get job postings that haven't been enriched yet (enriched_at is null)"""
+        return self.session.query(JobPosting).filter(
+            JobPosting.enriched_at.is_(None)
+        ).all()
+    
     def get_job_postings_by_ids(self, job_ids: List[int]):
         """Get job postings by a list of IDs"""
         return self.session.query(JobPosting).filter(JobPosting.id.in_(job_ids)).all()
@@ -95,11 +101,23 @@ class JobPostingsRepository:
             JobPosting.detailed_description.is_(None)
         ).all()
     
+    def get_active_job_postings(self):
+        """Get only active job postings (not expired, filled, or error)"""
+        return self.session.query(JobPosting).filter(
+            JobPosting.status == 'active'
+        ).all()
+    
+    def get_job_postings_by_status(self, status: str):
+        """Get job postings by status (active, expired, filled, error)"""
+        return self.session.query(JobPosting).filter(
+            JobPosting.status == status
+        ).all()
+    
     def update_job_details(self, job_id: int, detailed_description: str = None, 
                           requirements: str = None, benefits: str = None,
                           salary_range: str = None, application_deadline: datetime = None,
-                          contact_info: str = None):
-        """Update job posting with enriched details"""
+                          contact_info: str = None, status: str = None):
+        """Update job posting with enriched details and status"""
         try:
             job = self.session.query(JobPosting).filter(JobPosting.id == job_id).first()
             if job:
@@ -115,7 +133,22 @@ class JobPostingsRepository:
                     job.application_deadline = application_deadline
                 if contact_info is not None:
                     job.contact_info = contact_info
+                if status is not None:
+                    job.status = status
                 
+                job.enriched_at = datetime.now()
+                self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+        # Don't close session here - let the caller manage it
+    
+    def update_job_status(self, job_id: int, status: str):
+        """Update only the status of a job posting"""
+        try:
+            job = self.session.query(JobPosting).filter(JobPosting.id == job_id).first()
+            if job:
+                job.status = status
                 job.enriched_at = datetime.now()
                 self.session.commit()
         except Exception as e:

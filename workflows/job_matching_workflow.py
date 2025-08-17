@@ -2,7 +2,7 @@ from typing import Dict, Any, List, TypedDict
 from langgraph.graph import StateGraph, END
 from agents.job_seeker.agent import JobSeekerAgent
 from agents.candidate_matcher.agent import CandidateMatcherAgent
-from agents.common.tools.enrich_job_postings import enrich_job_postings
+from agents.job_enricher.agent import JobEnricherAgent
 import logging
 
 # Define the state schema as a TypedDict for proper LangGraph compatibility
@@ -52,7 +52,7 @@ def fetch_job_postings(state: WorkflowState) -> WorkflowState:
         }
 
 def enrich_job_postings_step(state: WorkflowState) -> WorkflowState:
-    """Step 2: Enrich job postings with detailed descriptions"""
+    """Step 2: Enrich job postings with detailed descriptions using the job enricher agent"""
     try:
         logging.info("Starting job enrichment step")
         
@@ -65,22 +65,18 @@ def enrich_job_postings_step(state: WorkflowState) -> WorkflowState:
                 "current_step": "enriching_jobs"
             }
         
-        # Get job IDs to enrich
-        job_ids = [job['id'] for job in job_postings if isinstance(job, dict) and 'id' in job]
+        # Use the job enricher agent
+        job_enricher = JobEnricherAgent()
+        result = job_enricher.exec()
         
-        if not job_ids:
-            logging.warning("No valid job IDs found for enrichment - skipping enrichment step")
-            return {
-                **state,
-                "enriched_jobs": [],
-                "current_step": "enriching_jobs"
-            }
-        
-        logging.info(f"Found {len(job_ids)} job IDs to enrich")
-        
-        # Use the enrich_job_postings tool
-        enriched_results = enrich_job_postings.invoke({"job_ids": job_ids})
-        
+        # Parse the result to get enriched jobs
+        if isinstance(result, dict):
+            enriched_results = result.get('enriched_jobs', [])
+        elif isinstance(result, list):
+            enriched_results = result
+        else:
+            enriched_results = []
+            
         logging.info(f"Enriched {len(enriched_results)} job postings")
         
         return {
@@ -181,3 +177,7 @@ def run_job_matching_workflow():
         logging.error(f"Workflow errors: {result['errors']}")
     
     return result
+
+if __name__ == '__main__':
+    result = run_job_matching_workflow()
+    print(f"Workflow completed with {len(result['matches'])} matches")

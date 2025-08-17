@@ -1,0 +1,21 @@
+2025-08-16 16:33:56,268 - __main__ - INFO - 🚀 Starting Improved Job Enrichment Test Suite
+2025-08-16 16:33:56,268 - __main__ - INFO - ============================================================
+2025-08-16 16:33:56,268 - __main__ - INFO - Testing expired job detection...
+2025-08-16 16:33:57,435 - __main__ - INFO - Testing URL: https://jobs.ashbyhq.com/Deel/bb349fda-7b81-48c2-aabe-c1990999d648
+2025-08-16 16:34:00,408 - __main__ - INFO - Status for https://jobs.ashbyhq.com/Deel/bb349fda-7b81-48c2-aabe-c1990999d648: {'status': 'expired', 'reason': 'Job not found (Ashby)'}
+2025-08-16 16:34:00,409 - __main__ - INFO - Testing URL: https://startup.jobs/backend-developer-latam-the-bridge-social-4663557
+2025-08-16 16:34:04,788 - __main__ - INFO - Status for https://startup.jobs/backend-developer-latam-the-bridge-social-4663557: {'status': 'active', 'reason': 'Job appears to be active'}
+2025-08-16 16:34:04,789 - __main__ - INFO - Testing URL: https://jobs.lever.co/example/expired-job
+2025-08-16 16:34:07,656 - __main__ - INFO - Status for https://jobs.lever.co/example/expired-job: {'status': 'expired', 'reason': 'Job not found (Lever)'}
+2025-08-16 16:34:07,679 - __main__ - INFO - Testing platform-specific extraction...
+2025-08-16 16:34:10,871 - __main__ - INFO - Extracted details: {'description': '', 'requirements': '', 'benefits': '', 'salary_range': '', 'deadline': None, 'contact_info': None}
+2025-08-16 16:34:10,893 - __main__ - INFO - Testing database integration...
+2025-08-16 16:34:10,894 - __main__ - INFO - ✅ Successfully connected to database
+2025-08-16 16:34:10,926 - __main__ - INFO - Found 0 active job postings
+2025-08-16 16:34:10,927 - __main__ - INFO - Found 0 expired job postings
+2025-08-16 16:34:10,927 - __main__ - INFO - Testing improved enrichment tool...
+2025-08-16 16:34:10,928 - __main__ - INFO - Testing with empty job_ids list...
+2025-08-16 16:34:11,322 - __main__ - INFO - ✅ Enrichment tool test completed. Result: []
+2025-08-16 16:34:11,322 - __main__ - INFO - ============================================================
+2025-08-16 16:34:11,322 - __main__ - INFO - ✅ All improved enrichment tests completed successfully!
+2025-08-16 16:34:11,322 - __main__ - INFO - 🎯 The system now properly detects and handles expired/filled job postings!

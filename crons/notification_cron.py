@@ -30,9 +30,13 @@ class NotificationCron(CronJob):
     def run(self):
         logging.info("Starting notification process")
         try:
-            # Get matches from the last 24 hours
+            # Get un-notified matches from the last 24 hours
             yesterday = datetime.now() - timedelta(days=1)
-            recent_matches = self.matches_repo.get_matches_since(yesterday)
+            recent_matches = self.matches_repo.get_unnotified_matches_since(yesterday)
+            
+            if not recent_matches:
+                logging.info("No un-notified matches found")
+                return
             
             # Group matches by candidate
             candidate_matches = {}
@@ -43,22 +47,31 @@ class NotificationCron(CronJob):
                 candidate_matches[candidate_id].append(match)
             
             # Send notifications to each candidate
+            notified_match_ids = []
             for candidate_id, matches in candidate_matches.items():
-                self._send_candidate_notification(candidate_id, matches)
+                success = self._send_candidate_notification(candidate_id, matches)
+                if success:
+                    # Add match IDs to the list of successfully notified matches
+                    notified_match_ids.extend([match.id for match in matches])
+                
+            # Mark successfully notified matches as notified
+            if notified_match_ids:
+                self.matches_repo.mark_matches_as_notified(notified_match_ids)
+                logging.info(f"Marked {len(notified_match_ids)} matches as notified")
                 
             logging.info(f"Sent notifications to {len(candidate_matches)} candidates")
             
         except Exception as e:
             logging.error(f"Notification process failed: {str(e)}")
 
-    def _send_candidate_notification(self, candidate_id: int, matches: list):
-        """Send notification to a specific candidate about their matches"""
+    def _send_candidate_notification(self, candidate_id: int, matches: list) -> bool:
+        """Send notification to a specific candidate about their matches. Returns True if successful."""
         try:
             # Get candidate info
             candidate = self.candidates_repo.get_candidate_by_id(candidate_id)
             if not candidate:
                 logging.warning(f"Candidate {candidate_id} not found")
-                return
+                return False
             
             # Format notification message
             message = self._format_match_notification(matches)
@@ -69,8 +82,11 @@ class NotificationCron(CronJob):
                 message=message
             ))
             
+            return True
+            
         except Exception as e:
             logging.error(f"Error sending notification to candidate {candidate_id}: {str(e)}")
+            return False
 
     def _format_match_notification(self, matches: list) -> str:
         """Format the notification message for matches"""

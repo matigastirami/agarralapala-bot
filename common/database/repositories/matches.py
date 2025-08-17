@@ -91,6 +91,13 @@ class MatchesRepository:
             Match.created_at >= since_date
         ).all()
     
+    def get_unnotified_matches_since(self, since_date: datetime) -> List[Match]:
+        """Get matches created since a specific date that haven't been notified yet"""
+        return self.session.query(Match).filter(
+            Match.created_at >= since_date,
+            Match.notified_at.is_(None)
+        ).all()
+    
     def get_matches_by_candidate(self, candidate_id: int) -> List[Match]:
         """Get all matches for a specific candidate"""
         return self.session.query(Match).filter(
@@ -120,6 +127,19 @@ class MatchesRepository:
             self.session.rollback()
             raise e
         # Don't close session here - let the caller manage it
+
+    def mark_matches_as_notified(self, match_ids: List[int]):
+        """Mark specific matches as notified by setting notified_at timestamp"""
+        try:
+            self.session.query(Match).filter(
+                Match.id.in_(match_ids)
+            ).update({
+                Match.notified_at: datetime.now()
+            }, synchronize_session=False)
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
 
     def close_session(self):
         """Close the session - call this when done with the repository"""

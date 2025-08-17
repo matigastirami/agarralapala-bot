@@ -5,6 +5,7 @@ class JobPosting(Base):
     __tablename__ = 'job_postings'
 
     id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=func.now(), nullable=False)
     job_title = Column(String(length=128), nullable=False)
     company_name = Column(String(length=128), nullable=False)
     job_link = Column(String(length=512), nullable=False, unique=True)
@@ -23,3 +24,6 @@ class JobPosting(Base):
     application_deadline = Column(DateTime, nullable=True)
     contact_info = Column(Text, nullable=True)
     enriched_at = Column(DateTime, nullable=True)
+    
+    # Status field to track job availability
+    status = Column(String(length=32), default='active', nullable=False)  # active, expired, filled, error

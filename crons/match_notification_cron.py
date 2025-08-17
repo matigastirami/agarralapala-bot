@@ -34,13 +34,13 @@ class MatchNotificationCron(CronJob):
                 logging.info("[MatchNotificationCron] No candidates with telegram chat IDs found")
                 return
             
-            # Get matches from the last 24 hours
+            # Get un-notified matches from the last 24 hours
             matches_repo = MatchesRepository()
             since_date = datetime.now() - timedelta(hours=24)
-            recent_matches = matches_repo.get_matches_since(since_date)
+            recent_matches = matches_repo.get_unnotified_matches_since(since_date)
             
             if not recent_matches:
-                logging.info("[MatchNotificationCron] No recent matches found")
+                logging.info("[MatchNotificationCron] No un-notified recent matches found")
                 return
             
             # Group matches by candidate
@@ -54,6 +54,7 @@ class MatchNotificationCron(CronJob):
             # Send notifications to each candidate
             notification_service = NotificationService()
             sent_count = 0
+            notified_match_ids = []
             
             # Import here to avoid circular imports
             from bot.telegram_bot import TelegramBot
@@ -77,12 +78,33 @@ class MatchNotificationCron(CronJob):
                             message=message
                         ))
                         
+                        # Add match IDs to the list of successfully notified matches
+                        notified_match_ids.extend([match.id for match in candidate_matches])
                         sent_count += 1
                         logging.info(f"[MatchNotificationCron] Sent notification to candidate {candidate.id}")
                     except Exception as e:
                         logging.error(f"[MatchNotificationCron] Failed to send notification to candidate {candidate.id}: {e}")
             
+            # Mark successfully notified matches as notified
+            if notified_match_ids:
+                matches_repo.mark_matches_as_notified(notified_match_ids)
+                logging.info(f"[MatchNotificationCron] Marked {len(notified_match_ids)} matches as notified")
+            
             logging.info(f"[MatchNotificationCron] Completed. Sent {sent_count} notifications")
             
         except Exception as e:
             logging.error(f"[MatchNotificationCron] Error during execution: {e}")
+
+
+if __name__ == "__main__":
+    # Test the notification system with the new notified_at field
+    print("🧪 Testing notification system with notified_at field...")
+    
+    try:
+        cron = MatchNotificationCron()
+        cron.run()
+        
+    except Exception as e:
+        print(f"\n❌ Test failed: {e}")
+        import traceback
+        traceback.print_exc()
