@@ -1,6 +1,7 @@
 import logging
+import asyncio
 
-from telegram import Update
+from telegram import Update, BotCommand
 from telegram.ext import ContextTypes, ApplicationBuilder, CommandHandler, MessageHandler, filters
 
 from bot.constants import MESSAGES, COMMAND_USE_GUIDES
@@ -11,10 +12,67 @@ from services.notification_service import NotificationService
 
 class TelegramBot:
     def __init__(self):
-        self.app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+        self.app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).post_init(self._post_init_setup).build()
         self.candidates_service = CandidatesService()
         self.notification_service = NotificationService()
         self._register_handlers()
+
+    def _setup_commands(self):
+        """Set up command suggestions that appear when users type / in Telegram"""
+        # Set commands in English (Telegram will show these based on user's language)
+        commands = [
+            BotCommand("help", "📖 Show help and available commands"),
+            BotCommand("setrole", "👨‍💻 Set your job role (e.g., Backend Developer)"),
+            BotCommand("setlocation", "📍 Set your location (e.g., Buenos Aires)"),
+            BotCommand("setstack", "🛠 Set your tech stack (e.g., Python, Node.js)"),
+            BotCommand("matches", "🎯 View your job matches"),
+            BotCommand("myinfo", "👤 View your profile information"),
+        ]
+        
+        # Store commands for later setup when the bot is running
+        self._commands_to_setup = commands
+        
+    async def _set_commands(self, commands):
+        """Set the bot commands asynchronously"""
+        try:
+            await self.app.bot.set_my_commands(commands)
+            logging.info("Bot commands set successfully")
+        except Exception as e:
+            logging.error(f"Failed to set bot commands: {e}")
+            
+    async def update_commands(self):
+        """Update bot commands (can be called to refresh commands)"""
+        self._setup_commands()
+        
+    async def clear_commands(self):
+        """Clear all bot commands"""
+        try:
+            await self.app.bot.delete_my_commands()
+            logging.info("Bot commands cleared successfully")
+        except Exception as e:
+            logging.error(f"Failed to clear bot commands: {e}")
+            
+    async def get_current_commands(self):
+        """Get current bot commands"""
+        try:
+            commands = await self.app.bot.get_my_commands()
+            return commands
+        except Exception as e:
+            logging.error(f"Failed to get bot commands: {e}")
+            return []
+            
+    def set_commands_sync(self):
+        """Set commands synchronously (for testing)"""
+        if hasattr(self, '_commands_to_setup'):
+            try:
+                # Create a new event loop for this operation
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(self._set_commands(self._commands_to_setup))
+                loop.close()
+                logging.info("Bot commands set successfully (sync)")
+            except Exception as e:
+                logging.error(f"Failed to set bot commands (sync): {e}")
 
     def _register_handlers(self):
         logging.info('Registering telegram bot handlers')
@@ -26,11 +84,32 @@ class TelegramBot:
         self.app.add_handler(CommandHandler('myinfo', self.get_my_info))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.non_command_message))
 
+    def _escape_markdown(self, text: str) -> str:
+        """
+        Escape special characters that break Telegram markdown parsing
+        """
+        if not text:
+            return text
+        
+        # Characters that need escaping in Telegram markdown
+        escape_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+        
+        escaped_text = text
+        for char in escape_chars:
+            escaped_text = escaped_text.replace(char, f'\\{char}')
+        
+        return escaped_text
+
     def _get_message(self, key: str, lang: str = "en", **kwargs) -> str:
         if key not in MESSAGES:
             return "Message not found."
         text = MESSAGES[key].get(lang, MESSAGES[key]["en"])
-        return text.format(**kwargs)
+        
+        # Format the message with kwargs
+        formatted_text = text.format(**kwargs)
+        
+        # Escape markdown characters in the formatted text
+        return self._escape_markdown(formatted_text)
 
     def _detect_language(self, update: Update) -> str:
         lang_code = (update.message.from_user.language_code or "en").lower()
@@ -121,7 +200,7 @@ class TelegramBot:
             
             # Format and send matches
             message = self.notification_service.format_matches_for_display(matches, user_lang)
-            await update.message.reply_markdown(message)
+            await update.message.reply_text(message)
             
         except Exception as e:
             logging.error(f"Error in /matches command: {e}")
@@ -130,7 +209,57 @@ class TelegramBot:
             )
 
     async def get_my_info(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        pass
+        chat_id = update.effective_chat.id
+        user_lang = self._detect_language(update)
+        logging.info(f"Received /myinfo command from chat_id {chat_id}")
+        
+        try:
+            # Get candidate by telegram chat ID
+            candidate = self.candidates_service.get_by_telegram_id(chat_id)
+            if not candidate:
+                await update.message.reply_markdown(
+                    self._get_message('candidate_not_found', user_lang)
+                )
+                return
+            
+            # Format the response
+            role = candidate.role or "Not set"
+            location = candidate.location or "Not set"
+            tech_stack = candidate.tech_stack or "Not set"
+            alerts_status = "✅ Active" if candidate.language else "❌ Inactive"
+            
+            if user_lang == "es":
+                message = (
+                    f"📝 **Tu información actual**\n\n"
+                    f"👨‍💻 **Rol:** `{role}`\n"
+                    f"📍 **Ubicación:** `{location}`\n"
+                    f"🛠 **Stack tecnológico:** `{tech_stack}`\n"
+                    f"🔔 **Alertas de empleo:** {alerts_status}\n\n"
+                    f"💡 *Para actualizar tu información usa:*\n"
+                    f"• `/setrole <rol>`\n"
+                    f"• `/setlocation <ubicación>`\n"
+                    f"• `/setstack <stack>`"
+                )
+            else:
+                message = (
+                    f"📝 **Your current information**\n\n"
+                    f"👨‍💻 **Role:** `{role}`\n"
+                    f"📍 **Location:** `{location}`\n"
+                    f"🛠 **Tech Stack:** `{tech_stack}`\n"
+                    f"🔔 **Job Alerts:** {alerts_status}\n\n"
+                    f"💡 *To update your information use:*\n"
+                    f"• `/setrole <role>`\n"
+                    f"• `/setlocation <location>`\n"
+                    f"• `/setstack <stack>`"
+                )
+            
+            await update.message.reply_markdown(message)
+            
+        except Exception as e:
+            logging.error(f"Error in /myinfo command: {e}")
+            await update.message.reply_markdown(
+                self._get_message('error_occurred', user_lang)
+            )
 
     async def non_command_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id = update.effective_chat.id
@@ -144,8 +273,22 @@ class TelegramBot:
 
     def run(self):
         logging.info('Starting telegram bot')
+        # Set up command suggestions
+        self._setup_commands()
+        # Start the bot
         self.app.run_polling()
         logging.info('Telegram bot started successfully')
+        
+    async def _post_init_setup(self, application):
+        """Set up commands after the bot is initialized"""
+        if hasattr(self, '_commands_to_setup'):
+            try:
+                await self._set_commands(self._commands_to_setup)
+                logging.info("Bot commands set successfully after initialization")
+            except Exception as e:
+                logging.error(f"Failed to set bot commands after initialization: {e}")
+        else:
+            logging.warning("No commands to set up - _commands_to_setup not found")
 
     async def send_message(self, chat_id: int, message: str):
         """Send a message to a specific chat ID"""
