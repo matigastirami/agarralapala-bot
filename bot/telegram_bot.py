@@ -313,10 +313,29 @@ class TelegramBot:
         )
         await update.message.reply_markdown(self._get_message('welcome', user_lang))
 
+    async def clear_webhook(self):
+        """Clear any existing webhook to prevent conflicts"""
+        try:
+            await self.app.bot.delete_webhook(drop_pending_updates=True)
+            logging.info("Webhook cleared successfully")
+        except Exception as e:
+            logging.warning(f"Could not clear webhook: {e}")
+
     def run(self):
         logging.info('Starting telegram bot')
         # Set up command suggestions
         self._setup_commands()
+        
+        # Clear webhook before starting polling
+        try:
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self.clear_webhook())
+            loop.close()
+        except Exception as e:
+            logging.warning(f"Could not clear webhook: {e}")
+        
         # Start the bot with conflict handling
         try:
             self.app.run_polling(
@@ -326,7 +345,13 @@ class TelegramBot:
             )
             logging.info('Telegram bot started successfully')
         except Exception as e:
-            if "terminated by other getUpdates request" in str(e):
+            error_str = str(e).lower()
+            if any(conflict_indicator in error_str for conflict_indicator in [
+                "terminated by other getupdates request",
+                "conflict",
+                "getupdates",
+                "another instance"
+            ]):
                 logging.error("Telegram bot conflict detected. Another instance may be running.")
                 logging.error("This usually happens during deployment. The bot will retry automatically.")
                 # Don't exit, let the main loop handle retry

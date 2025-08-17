@@ -109,9 +109,9 @@ if __name__ == '__main__':
         telegram_bot = TelegramBot()
         logging.info("Telegram bot initialized, starting polling...")
         
-        # Retry mechanism for telegram bot conflicts
-        max_retries = 5
-        retry_delay = 30  # seconds
+        # Retry mechanism for telegram bot conflicts with exponential backoff
+        max_retries = 8
+        base_delay = 60  # Start with 60 seconds
         
         for attempt in range(max_retries):
             try:
@@ -125,10 +125,18 @@ if __name__ == '__main__':
                 break
                 
             except Exception as e:
-                if "terminated by other getUpdates request" in str(e):
+                error_str = str(e).lower()
+                if any(conflict_indicator in error_str for conflict_indicator in [
+                    "terminated by other getupdates request",
+                    "conflict",
+                    "getupdates",
+                    "another instance"
+                ]):
                     if attempt < max_retries - 1:
+                        # Exponential backoff: 60s, 120s, 240s, 480s, etc.
+                        retry_delay = base_delay * (2 ** attempt)
                         logging.warning(f"Telegram bot conflict detected (attempt {attempt + 1}/{max_retries})")
-                        logging.info(f"Waiting {retry_delay} seconds before retry...")
+                        logging.info(f"Waiting {retry_delay} seconds before retry... (exponential backoff)")
                         time.sleep(retry_delay)
                         continue
                     else:
