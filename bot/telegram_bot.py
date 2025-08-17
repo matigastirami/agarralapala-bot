@@ -317,9 +317,23 @@ class TelegramBot:
         logging.info('Starting telegram bot')
         # Set up command suggestions
         self._setup_commands()
-        # Start the bot
-        self.app.run_polling()
-        logging.info('Telegram bot started successfully')
+        # Start the bot with conflict handling
+        try:
+            self.app.run_polling(
+                allowed_updates=[],
+                drop_pending_updates=True,  # Drop any pending updates on startup
+                close_loop=False  # Don't close the loop automatically
+            )
+            logging.info('Telegram bot started successfully')
+        except Exception as e:
+            if "terminated by other getUpdates request" in str(e):
+                logging.error("Telegram bot conflict detected. Another instance may be running.")
+                logging.error("This usually happens during deployment. The bot will retry automatically.")
+                # Don't exit, let the main loop handle retry
+                raise
+            else:
+                logging.error(f'Error starting telegram bot: {e}')
+                raise
         
     async def _post_init_setup(self, application):
         """Set up commands after the bot is initialized"""
