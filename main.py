@@ -3,6 +3,7 @@ import time
 import signal
 import sys
 import os
+import subprocess
 from threading import Thread
 
 from flask import Flask
@@ -30,6 +31,35 @@ def health_check():
 def root():
     """Root endpoint"""
     return {'message': 'Jobs Agent Telegram Bot', 'status': 'running'}, 200
+
+def check_existing_processes():
+    """Check for existing main.py processes that might cause conflicts"""
+    try:
+        # Check for other main.py processes
+        result = subprocess.run(
+            ['pgrep', '-f', 'python.*main.py'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            pids = result.stdout.strip().split('\n')
+            current_pid = os.getpid()
+            
+            # Filter out current process
+            other_pids = [pid for pid in pids if pid and int(pid) != current_pid]
+            
+            if other_pids:
+                logging.warning(f"Found existing main.py processes with PIDs: {other_pids}")
+                logging.warning("This may cause Telegram bot conflicts!")
+                logging.warning("Consider killing these processes before starting.")
+                return True
+        
+        return False
+        
+    except Exception as e:
+        logging.warning(f"Could not check for existing processes: {e}")
+        return False
 
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully"""
@@ -80,6 +110,10 @@ if __name__ == '__main__':
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
+    
+    # Check for existing processes that might cause conflicts
+    if check_existing_processes():
+        logging.warning("Continuing anyway, but conflicts may occur...")
     
     # Register signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, signal_handler)
