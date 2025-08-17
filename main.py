@@ -3,7 +3,9 @@ import time
 import signal
 import sys
 import os
+from threading import Thread
 
+from flask import Flask
 from bot.telegram_bot import TelegramBot
 from crons.cron_manager import CronManager
 from crons.job_seeker_cron import JobSeekerCron
@@ -15,6 +17,19 @@ from crons.match_notification_cron import MatchNotificationCron
 cron_manager = None
 telegram_bot = None
 shutdown_requested = False
+
+# Create Flask app for health checks
+app = Flask(__name__)
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Render"""
+    return {'status': 'healthy', 'service': 'jobs-agent'}, 200
+
+@app.route('/')
+def root():
+    """Root endpoint"""
+    return {'message': 'Jobs Agent Telegram Bot', 'status': 'running'}, 200
 
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully"""
@@ -45,6 +60,11 @@ def cleanup():
     
     logging.info("Cleanup completed")
 
+def run_flask():
+    """Run Flask app in a separate thread"""
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+
 # if __name__ == '__main__':
 #     if len(sys.argv) <= 1:
 #         raise Exception('You must enter a prompt')
@@ -67,6 +87,11 @@ if __name__ == '__main__':
     
     try:
         logging.info("Starting jobs-agent application...")
+        
+        # Start Flask health check server in a separate thread
+        flask_thread = Thread(target=run_flask, daemon=True)
+        flask_thread.start()
+        logging.info("Flask health check server started")
         
         # Initialize cron manager
         cron_manager = CronManager()
