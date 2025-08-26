@@ -11,12 +11,25 @@ from agents.common.tools.get_candidates import get_candidates
 from agents.common.tools.google_search import serpapi_google_search
 from agents.common.tools.json_tools import convert_to_json
 from agents.common.tools.save_job_postings import save_job_postings
+from agents.common.tools.analyze_job_url import analyze_job_url
+from agents.common.tools.extract_jobs_from_listing import extract_jobs_from_listing
+from agents.common.tools.validate_job_posting import validate_job_posting
+from agents.common.tools.batch_process_urls import batch_process_urls
 from agents.job_seeker.prompts import prompt
 from common.config.config import OPENAI_API_KEY
 
 class JobSeekerAgent(Agent):
     def __init__(self):
-        tools = [serpapi_google_search, convert_to_json, get_candidates, save_job_postings]
+        tools = [
+            serpapi_google_search, 
+            convert_to_json, 
+            get_candidates, 
+            save_job_postings,
+            analyze_job_url,
+            extract_jobs_from_listing,
+            validate_job_posting,
+            batch_process_urls
+        ]
         llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=SecretStr(OPENAI_API_KEY))
         agent = create_openai_functions_agent(
             tools=tools,

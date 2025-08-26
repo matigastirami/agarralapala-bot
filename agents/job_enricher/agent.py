@@ -46,41 +46,6 @@ class JobEnricherAgent(Agent):
         return output
 
 if __name__ == '__main__':
-    # Test LinkedIn job availability detection
-    import logging
-    from playwright.sync_api import sync_playwright
-    from agents.common.tools.enrich_job_postings import check_job_availability
-    
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    
-    # Test URLs
-    test_urls = [
-        "https://ar.linkedin.com/jobs/backend-developer-empleos",  # Search results page
-        "https://www.linkedin.com/jobs/view/back-end-developer-at-sur-latam-4149955398/?originalSubdomain=ar"  # Specific job
-    ]
-    
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        
-        for url in test_urls:
-            try:
-                print(f"\nTesting URL: {url}")
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                
-                # Check job availability
-                result = check_job_availability(page, url)
-                print(f"Result: {result}")
-                
-                # Get page title for debugging
-                title = page.title()
-                print(f"Page title: {title}")
-                
-            except Exception as e:
-                print(f"Error testing {url}: {str(e)}")
-        
-        browser.close()
-    
     # Run the actual agent
     agent = JobEnricherAgent()
     agent.exec()
