@@ -4,6 +4,7 @@ import signal
 import sys
 import os
 import subprocess
+import requests
 from threading import Thread
 
 from flask import Flask
@@ -95,6 +96,33 @@ def run_flask():
     port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
+def run_keep_alive():
+    """Send periodic keep-alive requests to prevent Render from sleeping"""
+    # Wait for Flask to start up
+    time.sleep(30)
+    
+    port = int(os.environ.get('PORT', 8000))
+    health_url = f"http://localhost:{port}/health"
+    interval = 14 * 60  # 14 minutes in seconds
+    
+    logging.info(f"Starting keep-alive service, pinging {health_url} every {interval/60} minutes")
+    
+    while not shutdown_requested:
+        try:
+            response = requests.get(health_url, timeout=10)
+            if response.status_code == 200:
+                logging.info("Keep-alive ping successful")
+            else:
+                logging.warning(f"Keep-alive ping returned status: {response.status_code}")
+        except Exception as e:
+            logging.warning(f"Keep-alive ping failed: {e}")
+        
+        # Sleep in small increments to check for shutdown
+        for _ in range(interval):
+            if shutdown_requested:
+                break
+            time.sleep(1)
+
 # if __name__ == '__main__':
 #     if len(sys.argv) <= 1:
 #         raise Exception('You must enter a prompt')
@@ -126,6 +154,11 @@ if __name__ == '__main__':
         flask_thread = Thread(target=run_flask, daemon=True)
         flask_thread.start()
         logging.info("Flask health check server started")
+        
+        # Start keep-alive service in a separate thread
+        keep_alive_thread = Thread(target=run_keep_alive, daemon=True)
+        keep_alive_thread.start()
+        logging.info("Keep-alive service started")
         
         # Initialize cron manager
         cron_manager = CronManager()
